@@ -1,19 +1,14 @@
 import tensorflow as tf
+from tensorflow.keras import  backend as K
 
-# define roc_callback, inspired by https://github.com/keras-team/keras/issues/6050#issuecomment-329996505
-def auc_roc(y_true, y_pred):
-    # any tensorflow metric
-    value, update_op = tf.contrib.metrics.streaming_auc(y_pred, y_true)
+# https://stackoverflow.com/a/51436745/7343992
+def auc(y_true, y_pred):
 
-    # find all variables created for this metric
-    metric_vars = [i for i in tf.local_variables() if 'auc_roc' in i.name.split('/')[1]]
+    # argmax is necessary because model.predict_generator has a different output from model.predict
+    # https://github.com/keras-team/keras/issues/3477#issuecomment-360022086
+    y_pred = K.argmax(y_pred, axis=-1)
 
-    # Add metric variables to GLOBAL_VARIABLES collection.
-    # They will be initialized for new session.
-    for v in metric_vars:
-        tf.add_to_collection(tf.GraphKeys.GLOBAL_VARIABLES, v)
+    auc = tf.metrics.auc(y_true, y_pred)[1]
+    K.get_session().run(tf.local_variables_initializer())
 
-    # force to update metric values
-    with tf.control_dependencies([update_op]):
-        value = tf.identity(value)
-        return value
+    return auc
