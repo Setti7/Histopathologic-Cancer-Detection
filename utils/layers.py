@@ -4,14 +4,15 @@ import tensorflow as tf
 # https://keras.io/examples/cifar10_cnn_tfaugment2d/
 def augment_2d(
         inputs,
-        rotation=0,
+        rotation_range=0,
         horizontal_flip=False,
         vertical_flip=False,
-        crop=False):
+        crop=False,
+        output_size=None):
     """Apply additive augmentation on 2D data.
 
     # Arguments
-      rotation: A float, the degree range for rotation (0 <= rotation < 180),
+      rotation_range: A float, the degree range for rotation (0 <= rotation < 180),
           e.g. 3 for random image rotation between (-3.0, 3.0).
       horizontal_flip: A boolean, whether to allow random horizontal flip,
           e.g. true for 50% possibility to flip image horizontally.
@@ -23,7 +24,7 @@ def augment_2d(
     """
     if inputs.dtype != tf.float32:
         inputs = tf.image.convert_image_dtype(inputs, dtype=tf.float32)
-
+    
     # Only the center 32x32 region is important for the classification
     if crop:
         with tf.name_scope('cropping'):
@@ -34,6 +35,10 @@ def augment_2d(
                 target_height=32,
                 target_width=32
             )
+            
+    # resizing all images to the size the pre-trained model requires
+    if output_size is not None:
+        inputs = tf.image.resize_images(inputs, output_size)
 
     with tf.name_scope('augmentation'):
         shp = tf.shape(inputs)
@@ -44,8 +49,8 @@ def augment_2d(
         transforms = []
         identity = tf.constant([1, 0, 0, 0, 1, 0, 0, 0], dtype=tf.float32)
 
-        if rotation > 0:
-            angle_rad = rotation * 3.141592653589793 / 180.0
+        if rotation_range > 0:
+            angle_rad = rotation_range * 3.141592653589793 / 180.0
             angles = tf.random_uniform([batch_size], -angle_rad, angle_rad)
             f = tf.contrib.image.angles_to_projective_transforms(angles,
                                                                  height, width)

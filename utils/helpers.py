@@ -1,4 +1,4 @@
-import cv2
+# import cv2
 
 
 def balance_data(df):
@@ -17,7 +17,7 @@ def balance_data(df):
     return df
 
 
-def show_img(img, label='image'):
-    cv2.imshow(label, img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+# def show_img(img, label='image'):
+#     cv2.imshow(label, img)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()

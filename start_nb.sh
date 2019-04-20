@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 source venv/bin/activate
-jupyter nbconvert train.ipynb --to python
+jupyter lab 
